@@ -1,0 +1,65 @@
+@echo off
+
+chcp 65001 >nul
+
+echo ==============================
+echo RealtimeFaceSwap 安装程序
+echo ==============================
+echo.
+
+
+REM 检查 release 目录
+
+if not exist release (
+
+    echo 错误: 未找到 release 目录
+    echo 请先运行 build_windows.bat 生成发布包
+    pause
+    exit /b 1
+
+)
+
+
+REM 安装目录
+
+set INSTALL_DIR=%PROGRAMFILES%\RealtimeFaceSwap
+
+
+echo 安装到: %INSTALL_DIR%
+echo.
+
+
+REM 创建目录
+
+if not exist "%INSTALL_DIR%" mkdir "%INSTALL_DIR%"
+
+
+REM 复制文件
+
+echo 复制文件...
+
+xcopy release\* "%INSTALL_DIR%\" /E /I /Y
+
+
+REM 创建桌面快捷方式
+
+echo 创建桌面快捷方式...
+
+set SHORTCUT=%USERPROFILE%\Desktop\RealtimeFaceSwap.lnk
+
+powershell -Command ^
+  "$ws = New-Object -ComObject WScript.Shell; ^
+   $sc = $ws.CreateShortcut('%SHORTCUT%'); ^
+   $sc.TargetPath = '%INSTALL_DIR%\RealtimeFaceSwap.exe'; ^
+   $sc.WorkingDirectory = '%INSTALL_DIR%'; ^
+   $sc.Save()"
+
+
+echo.
+echo ==============================
+echo 安装完成!
+echo ==============================
+echo.
+echo 启动: 桌面 RealtimeFaceSwap 快捷方式
+echo.
+pause

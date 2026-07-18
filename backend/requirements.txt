@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+opencv-python
+numpy
+websockets
+
+insightface
+onnxruntime-gpu
