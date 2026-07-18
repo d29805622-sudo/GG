@@ -16,8 +16,6 @@ a = Analysis(
 
         ('settings.json', '.'),
 
-        ('models', 'models'),
-
     ],
 
     hiddenimports=[
