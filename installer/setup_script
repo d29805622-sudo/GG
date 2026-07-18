@@ -8,6 +8,20 @@ echo ==============================
 echo.
 
 
+REM 检查管理员权限
+
+net session >nul 2>&1
+
+if errorlevel 1 (
+
+    echo 错误: 需要管理员权限安装到 Program Files
+    echo 请右键此脚本选择"以管理员身份运行"
+    pause
+    exit /b 1
+
+)
+
+
 REM 检查 release 目录
 
 if not exist release (

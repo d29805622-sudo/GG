@@ -44,4 +44,9 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 Filename: "{app}\{#MyAppExeName}"; Description: "现在运行 {#MyAppName}"; Flags: nowait postinstall skipifsilent
 
 [UninstallDelete]
-Type: filesandordirs; Name: "{app}"
+; 卸载时只删除程序文件，保留用户配置（user.json）
+Type: files; Name: "{app}\*.exe"
+Type: files; Name: "{app}\*.json"
+Type: files; Name: "{app}\*.md"
+Type: filesandordirs; Name: "{app}\backend"
+Type: filesandordirs; Name: "{app}\frontend"

@@ -1,5 +1,7 @@
 import onnxruntime as ort
 
+from config import GPU_ENABLE
+
 
 class AIEngine:
 
@@ -12,10 +14,16 @@ class AIEngine:
         model_path
     ):
 
-        providers = [
-            "CUDAExecutionProvider",
-            "CPUExecutionProvider"
-        ]
+        # GPU_ENABLE=False 时只用 CPU，避免 CUDA provider 不可用时报错
+        if GPU_ENABLE:
+            providers = [
+                "CUDAExecutionProvider",
+                "CPUExecutionProvider"
+            ]
+        else:
+            providers = [
+                "CPUExecutionProvider"
+            ]
 
         self.session = ort.InferenceSession(
 

@@ -1,6 +1,6 @@
 import cv2
 
-from config import *
+from config import CAMERA_ID, WIDTH, HEIGHT
 
 
 class Camera:
@@ -21,6 +21,12 @@ class Camera:
             HEIGHT
         )
 
+        if not self.cap.isOpened():
+
+            raise RuntimeError(
+                f"无法打开摄像头 {CAMERA_ID}，请检查设备或 camera 配置"
+            )
+
     def get_frame(self):
 
         ok, frame = self.cap.read()
@@ -32,4 +38,8 @@ class Camera:
 
     def close(self):
 
-        self.cap.release()
+        if self.cap is not None and self.cap.isOpened():
+
+            self.cap.release()
+
+        self.cap = None

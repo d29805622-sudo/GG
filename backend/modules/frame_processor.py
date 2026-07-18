@@ -3,7 +3,6 @@ import cv2
 import numpy as np
 
 from modules.ai_engine import AIEngine
-from modules.model_manager import ModelManager
 
 
 class FrameProcessor:
@@ -11,8 +10,6 @@ class FrameProcessor:
     def __init__(self):
 
         self.enabled = False
-
-        self.model_manager = ModelManager()
 
         self.engine = AIEngine()
 

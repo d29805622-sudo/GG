@@ -19,7 +19,17 @@ class ConfigService {
 
         final content = await file.readAsString();
 
-        _config = json.decode(content);
+        final decoded = json.decode(content);
+
+        if (decoded is Map<String, dynamic>) {
+
+          _config = decoded;
+
+        } else {
+
+          _config = {};
+
+        }
 
       }
 
@@ -32,17 +42,27 @@ class ConfigService {
   }
 
 
-  static Future<void> save(Map<String, dynamic> data) async {
+  static Future<bool> save(Map<String, dynamic> data) async {
 
     _config = data;
 
-    final file = File(_configFile);
+    try {
 
-    await file.writeAsString(
+      final file = File(_configFile);
 
-      json.encode(data)
+      await file.writeAsString(
 
-    );
+        json.encode(data)
+
+      );
+
+      return true;
+
+    } catch (e) {
+
+      return false;
+
+    }
 
   }
 

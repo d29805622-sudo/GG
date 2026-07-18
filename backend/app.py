@@ -1,11 +1,11 @@
 import os
+import sys
 import time
-import json
+import asyncio
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import asyncio
 
 from camera import Camera
 from config import HOST, PORT, GPU_ENABLE, MODEL, CAMERA_ID, WIDTH, HEIGHT
@@ -28,8 +28,7 @@ app.add_middleware(
 )
 
 
-camera = Camera()
-
+# 全局共享对象（只读或线程安全）
 face_detector = FaceDetector()
 
 frame_processor = FrameProcessor()
@@ -45,12 +44,19 @@ state = {
 }
 
 
+def _app_dir():
+    """返回后端运行目录，兼容源码与 PyInstaller 打包模式"""
+
+    if getattr(sys, "frozen", False):
+        return os.path.dirname(os.path.abspath(sys.executable))
+
+    return os.path.dirname(os.path.abspath(__file__))
+
+
 def _try_load_swap_model():
     """启动时尝试加载默认换脸模型，无则跳过"""
 
-    default_path = os.path.join(
-        "models", "swap.onnx"
-    )
+    default_path = os.path.join(_app_dir(), "models", "swap.onnx")
 
     if os.path.exists(default_path):
 
@@ -97,7 +103,7 @@ def status():
         "started_at": state["started_at"],
         "uptime": (
             int(time.time() - state["started_at"])
-            if state["started_at"] else 0
+            if state["started_at"] and state["running"] else 0
         )
     }
 
@@ -134,13 +140,40 @@ def swap_control(payload: ControlPayload):
     return {"ok": True, "enabled": frame_processor.enabled}
 
 
+def _process_frame_sync(camera, faces_detected):
+    """同步执行：取帧 → 检测 → 换脸 → 编码。在线程池中调用"""
+
+    frame = camera.get_frame()
+
+    if frame is None:
+        return None, 0
+
+    faces = face_detector.detect(frame)
+
+    faces_detected[0] = len(faces)
+
+    frame = frame_processor.process(frame, faces)
+
+    return encode(frame), len(faces)
+
+
 @app.websocket("/camera")
 async def camera_ws(websocket: WebSocket):
 
     await websocket.accept()
 
+    # 每个 WebSocket 会话使用独立 Camera 实例，避免多客户端冲突
+    try:
+        camera = Camera()
+    except Exception as e:
+        await websocket.send_text(f"ERROR: {e}")
+        await websocket.close()
+        return
+
     state["running"] = True
     state["started_at"] = time.time()
+
+    loop = asyncio.get_event_loop()
 
     try:
 
@@ -148,26 +181,24 @@ async def camera_ws(websocket: WebSocket):
 
             t0 = time.time()
 
-            frame = camera.get_frame()
+            # 用 run_in_executor 把同步阻塞调用丢到线程池，
+            # 避免阻塞事件循环导致 HTTP 接口无响应
+            faces_detected = [0]
+            data, n_faces = await loop.run_in_executor(
+                None,
+                _process_frame_sync,
+                camera,
+                faces_detected
+            )
 
-            if frame is not None:
+            state["last_faces"] = n_faces
+            fps_counter.update()
+            state["latency_ms"] = (time.time() - t0) * 1000
 
-                faces = face_detector.detect(frame)
+            if data:
+                await websocket.send_text(data)
 
-                state["last_faces"] = len(faces)
-
-                frame = frame_processor.process(frame, faces)
-
-                data = encode(frame)
-
-                fps_counter.update()
-
-                state["latency_ms"] = (time.time() - t0) * 1000
-
-                if data:
-                    await websocket.send_text(data)
-
-            await asyncio.sleep(0.03)
+            await asyncio.sleep(0.01)
 
     except WebSocketDisconnect:
         pass
@@ -176,7 +207,14 @@ async def camera_ws(websocket: WebSocket):
         print("WebSocket 异常:", e)
 
     finally:
+        # 关键：释放摄像头资源
+        try:
+            camera.close()
+        except Exception:
+            pass
+
         state["running"] = False
+        state["started_at"] = None
 
 
 if __name__ == "__main__":

@@ -45,6 +45,8 @@ class _SettingsPageState extends State<SettingsPage> {
 
     await ConfigService.load();
 
+    if (!mounted) return;
+
     final h = ConfigService.get("server_host");
 
     final p = ConfigService.get("server_port");
@@ -79,17 +81,19 @@ class _SettingsPageState extends State<SettingsPage> {
 
     data["server_port"] = port ?? ServerConfig.defaultPort;
 
-    await ConfigService.save(data);
+    final ok = await ConfigService.save(data);
+
+    if (!mounted) return;
 
     setState(() => _saving = false);
 
-    if (mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(ok ? "已保存" : "保存失败（可能无写权限）"))
 
-        const SnackBar(content: Text("已保存"))
+    );
 
-      );
+    if (ok) {
 
       Navigator.of(context).pop(true);
 

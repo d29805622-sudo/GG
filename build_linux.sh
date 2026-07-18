@@ -156,6 +156,7 @@ cat > "${DEB_DIR}/usr/share/applications/RealtimeFaceSwap.desktop" <<EOF
 Name=RealtimeFaceSwap
 Comment=实时 AI 换脸软件
 Exec=/opt/RealtimeFaceSwap/RealtimeFaceSwap
+Path=/opt/RealtimeFaceSwap
 Icon=realtimefaceswap
 Terminal=false
 Type=Application

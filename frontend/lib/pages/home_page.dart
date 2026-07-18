@@ -56,6 +56,8 @@ class _HomePageState extends State<HomePage> {
 
     await ConfigService.load();
 
+    if (!mounted) return;
+
     final h = ConfigService.get("server_host");
 
     final p = ConfigService.get("server_port");
@@ -122,6 +124,8 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _pollStatus() async {
 
+    HttpClient? client;
+
     try {
 
       final url = ServerConfig.buildHttpUrl(
@@ -130,7 +134,7 @@ class _HomePageState extends State<HomePage> {
         path: "/api/status"
       );
 
-      final client = HttpClient();
+      client = HttpClient();
 
       client.connectionTimeout = const Duration(seconds: 2);
 
@@ -138,20 +142,26 @@ class _HomePageState extends State<HomePage> {
 
       final res = await req.close();
 
+      if (res.statusCode != 200) return;
+
       final body = await res.transform(utf8.decoder).join();
 
-      client.close();
+      final decoded = json.decode(body);
 
-      if (mounted) {
+      if (mounted && decoded is Map<String, dynamic>) {
 
         setState(() {
 
-          _status = json.decode(body) as Map<String, dynamic>;
+          _status = decoded;
 
         });
       }
 
     } catch (_) {
+
+    } finally {
+
+      client?.close();
 
     }
   }
@@ -197,7 +207,7 @@ class _HomePageState extends State<HomePage> {
 
       appBar: AppBar(
 
-        title: const Text("RealtimeFaceSwap v1.1"),
+        title: const Text("RealtimeFaceSwap v1.1.1"),
 
         actions: [
 

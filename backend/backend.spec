@@ -52,12 +52,8 @@ a = Analysis(
         'modules.face_detector',
         'modules.frame_processor',
         'modules.ai_engine',
-        'modules.model_manager',
         'modules.performance',
         'modules.device_manager',
-        'modules.face_encoder',
-        'modules.frame_queue',
-        'modules.camera_thread',
 
         'camera',
         'config',

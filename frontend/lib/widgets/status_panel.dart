@@ -59,7 +59,7 @@ class StatusPanel extends StatelessWidget {
 
         item(
           "运行状态",
-          _fmt(status["running"], "--") == "true" ? "运行中" : "已停止"
+          status["running"] == true ? "运行中" : "已停止"
         ),
 
         item(
@@ -79,7 +79,7 @@ class StatusPanel extends StatelessWidget {
 
         item(
           "GPU加速",
-          _fmt(status["gpu_enabled"], "--")
+          status["gpu_enabled"] == true ? "已启用" : "未启用"
         ),
 
         item(
