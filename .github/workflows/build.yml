@@ -1,0 +1,133 @@
+name: Build Windows Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '版本号 (如 1.1.1)'
+        required: false
+        default: '1.1.1'
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+
+      - name: Enable Windows desktop
+        run: flutter config --enable-windows-desktop
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build backend
+        working-directory: backend
+        run: pyinstaller --clean --noconfirm backend.spec
+
+      - name: Build frontend
+        working-directory: frontend
+        run: flutter build windows --release
+
+      - name: Build launcher
+        run: pyinstaller --clean --noconfirm launcher.spec
+
+      - name: Assemble release package
+        run: |
+          mkdir release
+          mkdir release\backend
+          mkdir release\frontend
+          copy dist\RealtimeFaceSwap.exe release\
+          copy version.json release\
+          copy README.md release\
+          copy backend\dist\backend.exe release\backend\
+          copy backend\settings.json release\backend\
+          if (Test-Path backend\models) { xcopy backend\models release\backend\models /E /I /Y }
+          xcopy frontend\build\windows\x64\runner\Release release\frontend /E /I /Y
+        shell: pwsh
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RealtimeFaceSwap-Windows
+          path: release/
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+
+      - name: Install Linux build deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build libgtk-3-dev libx11-dev libxext-dev libxrender-dev libgl1-mesa-glx xvfb
+
+      - name: Enable Linux desktop
+        run: flutter config --enable-linux-desktop
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build backend
+        working-directory: backend
+        run: pyinstaller --clean --noconfirm backend.spec
+
+      - name: Build frontend
+        working-directory: frontend
+        run: flutter build linux --release
+
+      - name: Build launcher
+        run: pyinstaller --clean --noconfirm launcher.spec
+
+      - name: Assemble release package
+        run: |
+          mkdir -p release/backend release/frontend
+          cp dist/RealtimeFaceSwap release/
+          cp version.json release/
+          cp README.md release/
+          cp backend/dist/backend release/backend/
+          cp backend/settings.json release/backend/
+          if [ -d backend/models ]; then cp -r backend/models release/backend/models; fi
+          cp -r frontend/build/linux/x64/release/bundle/* release/frontend/
+          chmod +x release/RealtimeFaceSwap release/backend/backend
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RealtimeFaceSwap-Linux
+          path: release/
