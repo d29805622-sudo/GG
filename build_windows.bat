@@ -8,75 +8,118 @@ echo ==============================
 echo.
 
 
-REM 后端打包
+REM 0. 环境检查
 
-echo [1/3] 打包后端...
+echo [0/4] 环境检查...
+
+where python >nul 2>&1
+if errorlevel 1 (
+    echo 缺少 python，请先安装 Python 3.10+ 并加入 PATH
+    pause
+    exit /b 1
+)
+
+where flutter >nul 2>&1
+if errorlevel 1 (
+    echo 缺少 flutter，请先安装 Flutter 并配置 Windows desktop
+    echo   flutter config --enable-windows-desktop
+    pause
+    exit /b 1
+)
+
+python -c "import PyInstaller" 2>nul
+if errorlevel 1 (
+    echo 安装 PyInstaller...
+    pip install pyinstaller
+)
+
+if not exist backend\venv (
+    echo 提示: 建议为后端创建虚拟环境
+)
+
+if not exist backend\requirements_installed (
+    echo 安装后端依赖...
+    cd backend
+    pip install -r requirements.txt
+    echo done > requirements_installed
+    cd ..
+)
+
+echo.
+
+
+REM 1. 后端打包
+
+echo [1/4] 打包后端...
 
 cd backend
 
-pyinstaller --onefile --name backend app.py
+pyinstaller --clean --noconfirm backend.spec
 
 cd ..
 
 echo.
 
 
-REM 前端打包
+REM 2. 前端打包
 
-echo [2/3] 打包前端...
+echo [2/4] 打包前端...
 
 cd frontend
 
-flutter build windows
+flutter build windows --release
 
 cd ..
 
 echo.
 
 
-REM 启动器打包
+REM 3. 启动器打包
 
-echo [3/3] 打包启动器...
+echo [3/4] 打包启动器...
 
-pyinstaller --onefile --name RealtimeFaceSwap launcher.py
+if exist launcher.spec (
+    pyinstaller --clean --noconfirm launcher.spec
+) else (
+    pyinstaller --onefile --name RealtimeFaceSwap launcher.py
+)
 
 echo.
 
 
-REM 整理发布目录
+REM 4. 整理发布目录
 
-echo 整理发布目录...
+echo [4/4] 整理发布目录...
 
 if exist release rmdir /s /q release
 
 mkdir release
-
 mkdir release\backend
-
 mkdir release\frontend
 
 copy dist\RealtimeFaceSwap.exe release\
-
 copy version.json release\
-
-copy README.txt release\
+if exist README.md copy README.md release\
 
 copy backend\dist\backend.exe release\backend\
-
 copy backend\settings.json release\backend\
 
-xcopy backend\models release\backend\models /E /I /Y
+if exist backend\models (
+    xcopy backend\models release\backend\models /E /I /Y
+)
 
-xcopy frontend\build\windows\runner\Release release\frontend /E /I /Y
+if exist frontend\build\windows\x64\runner\Release (
+    xcopy frontend\build\windows\x64\runner\Release release\frontend /E /I /Y
+) else (
+    xcopy frontend\build\windows\runner\Release release\frontend /E /I /Y
+)
 
 echo.
 
 echo ==============================
-
 echo 打包完成!
-
 echo 输出目录: release\
-
+echo 运行: release\RealtimeFaceSwap.exe
 echo ==============================
 
 pause

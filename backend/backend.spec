@@ -23,10 +23,44 @@ a = Analysis(
     hiddenimports=[
 
         'insightface',
+        'insightface.app',
+        'insightface.model_zoo',
 
         'onnxruntime',
 
         'cv2',
+
+        'fastapi',
+        'fastapi.middleware',
+        'fastapi.middleware.cors',
+
+        'uvicorn',
+        'uvicorn.logging',
+        'uvicorn.loops',
+        'uvicorn.loops.auto',
+        'uvicorn.protocols',
+        'uvicorn.protocols.http',
+        'uvicorn.protocols.http.auto',
+        'uvicorn.protocols.websockets',
+        'uvicorn.protocols.websockets.auto',
+        'uvicorn.lifespan',
+        'uvicorn.lifespan.on',
+
+        'pydantic',
+
+        'modules.stream',
+        'modules.face_detector',
+        'modules.frame_processor',
+        'modules.ai_engine',
+        'modules.model_manager',
+        'modules.performance',
+        'modules.device_manager',
+        'modules.face_encoder',
+        'modules.frame_queue',
+        'modules.camera_thread',
+
+        'camera',
+        'config',
 
     ],
 
