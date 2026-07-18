@@ -3,8 +3,20 @@ import 'package:flutter/material.dart';
 
 class ControlPanel extends StatelessWidget {
 
+  final bool running;
+
+  final VoidCallback onStart;
+
+  final VoidCallback onStop;
+
+  final VoidCallback onSettings;
+
   const ControlPanel({
-    super.key
+    super.key,
+    required this.running,
+    required this.onStart,
+    required this.onStop,
+    required this.onSettings
   });
 
   @override
@@ -20,39 +32,29 @@ class ControlPanel extends StatelessWidget {
 
         ElevatedButton(
 
-          onPressed: () {},
+          onPressed: running ? null : onStart,
 
-          child: const Text(
-            "启动"
-          )
+          child: const Text("启动")
 
         ),
 
-        const SizedBox(
-          width: 20
-        ),
+        const SizedBox(width: 20),
 
         ElevatedButton(
 
-          onPressed: () {},
+          onPressed: running ? onStop : null,
 
-          child: const Text(
-            "停止"
-          )
+          child: const Text("停止")
 
         ),
 
-        const SizedBox(
-          width: 20
-        ),
+        const SizedBox(width: 20),
 
         ElevatedButton(
 
-          onPressed: () {},
+          onPressed: onSettings,
 
-          child: const Text(
-            "设置"
-          )
+          child: const Text("设置")
 
         ),
 

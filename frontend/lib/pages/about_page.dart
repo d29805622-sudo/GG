@@ -26,7 +26,7 @@ class AboutPage extends StatelessWidget {
 
         child: Text(
 
-          "RealtimeFaceSwap\n\nVersion 1.0.0"
+          "RealtimeFaceSwap\n\nVersion 1.1.1"
 
         )
 

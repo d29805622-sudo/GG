@@ -5,4 +5,4 @@ numpy
 websockets
 
 insightface
-onnxruntime-gpu
+onnxruntime

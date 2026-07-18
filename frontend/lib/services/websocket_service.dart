@@ -1,18 +1,16 @@
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-import '../config/server_config.dart';
-
 
 class WebSocketService {
 
   WebSocketChannel? channel;
 
-  Stream<String> connect() {
+  Stream<String> connect({
+    required String url
+  }) {
 
     channel = WebSocketChannel.connect(
-      Uri.parse(
-        ServerConfig.websocketURL
-      )
+      Uri.parse(url)
     );
 
     return channel!
@@ -24,7 +22,9 @@ class WebSocketService {
   }
 
   void close() {
+
     channel?.sink.close();
+
   }
 
 }

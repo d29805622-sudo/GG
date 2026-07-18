@@ -5,8 +5,11 @@ import 'video_view.dart';
 
 class VideoPanel extends StatelessWidget {
 
+  final Stream<String>? stream;
+
   const VideoPanel({
-    super.key
+    super.key,
+    this.stream
   });
 
   @override
@@ -18,7 +21,7 @@ class VideoPanel extends StatelessWidget {
 
       padding: const EdgeInsets.all(10),
 
-      child: const VideoView(),
+      child: VideoView(stream: stream),
 
     );
 

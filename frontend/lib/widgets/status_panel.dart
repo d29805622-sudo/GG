@@ -3,8 +3,17 @@ import 'package:flutter/material.dart';
 
 class StatusPanel extends StatelessWidget {
 
+  final Map<String, dynamic> status;
+
+  final String host;
+
+  final int port;
+
   const StatusPanel({
-    super.key
+    super.key,
+    required this.status,
+    required this.host,
+    required this.port
   });
 
   Widget item(
@@ -26,6 +35,14 @@ class StatusPanel extends StatelessWidget {
 
   }
 
+  String _fmt(dynamic v, String fallback) {
+
+    if (v == null) return fallback;
+
+    return v.toString();
+
+  }
+
   @override
   Widget build(
     BuildContext context
@@ -36,18 +53,38 @@ class StatusPanel extends StatelessWidget {
       children: [
 
         item(
+          "服务器",
+          "$host:$port"
+        ),
+
+        item(
+          "运行状态",
+          _fmt(status["running"], "--") == "true" ? "运行中" : "已停止"
+        ),
+
+        item(
           "FPS",
-          "60"
+          _fmt(status["fps"], "--")
         ),
 
         item(
-          "GPU",
-          "Enabled"
+          "检测人脸",
+          _fmt(status["faces"], "--")
         ),
 
         item(
-          "Camera",
-          "Connected"
+          "延迟(ms)",
+          _fmt(status["latency_ms"], "--")
+        ),
+
+        item(
+          "GPU加速",
+          _fmt(status["gpu_enabled"], "--")
+        ),
+
+        item(
+          "分辨率",
+          _fmt(status["resolution"], "--")
         )
 
       ],

@@ -2,38 +2,32 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
-import '../services/websocket_service.dart';
 
+class VideoView extends StatelessWidget {
 
-class VideoView extends StatefulWidget {
+  final Stream<String>? stream;
 
   const VideoView({
-    super.key
+    super.key,
+    this.stream
   });
-
-  @override
-  State<VideoView> createState() => _VideoViewState();
-
-}
-
-
-class _VideoViewState extends State<VideoView> {
-
-  final WebSocketService service = WebSocketService();
-
-  Stream<String>? stream;
-
-  @override
-  void initState() {
-    super.initState();
-
-    stream = service.connect();
-  }
 
   @override
   Widget build(
     BuildContext context
   ) {
+
+    if (stream == null) {
+
+      return const Center(
+
+        child: Text(
+          "点击「启动」开始连接..."
+        )
+
+      );
+
+    }
 
     return StreamBuilder<String>(
 
@@ -41,13 +35,23 @@ class _VideoViewState extends State<VideoView> {
 
       builder: (context, snapshot) {
 
-        if (!snapshot.hasData) {
+        if (snapshot.hasError) {
 
           return const Center(
 
             child: Text(
-              "等待视频连接..."
+              "连接错误"
             )
+
+          );
+
+        }
+
+        if (!snapshot.hasData) {
+
+          return const Center(
+
+            child: CircularProgressIndicator()
 
           );
 
@@ -69,12 +73,6 @@ class _VideoViewState extends State<VideoView> {
 
     );
 
-  }
-
-  @override
-  void dispose() {
-    service.close();
-    super.dispose();
   }
 
 }

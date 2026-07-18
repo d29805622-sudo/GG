@@ -2,5 +2,5 @@
     "name": "RealtimeFaceSwap",
     "version": "1.1.1",
     "build": "2026",
-    "platform": "Windows"
+    "platform": "Windows/Linux"
 }
