@@ -1,7 +1,8 @@
 include ':app'
 
-def localPropertiesFile = rootProject.file("local.properties")
+def localPropertiesFile = new File(settingsDir, "local.properties")
 def flutterSdkPath = ''
+
 if (localPropertiesFile.exists()) {
     localPropertiesFile.withReader('UTF-8') { reader ->
         def properties = new Properties()

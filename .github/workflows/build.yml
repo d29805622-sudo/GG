@@ -33,6 +33,10 @@ jobs:
       - name: Enable Windows desktop
         run: flutter config --enable-windows-desktop
 
+      - name: Add Windows platform files
+        working-directory: frontend
+        run: flutter create --platforms=windows .
+
       - name: Install Inno Setup
         run: |
           choco install innosetup --no-progress -y
@@ -120,6 +124,10 @@ jobs:
 
       - name: Enable Linux desktop
         run: flutter config --enable-linux-desktop
+
+      - name: Add Linux platform files
+        working-directory: frontend
+        run: flutter create --platforms=linux .
 
       - name: Install backend dependencies
         working-directory: backend
